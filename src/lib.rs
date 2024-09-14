@@ -381,6 +381,8 @@ impl<W: Write> Tracer<W> {
                 let code = RetCode::from_raw(registers.a7);
                 #[cfg(target_arch = "aarch64")]
                 let code: RetCode = RetCode::from_raw(registers.regs[8]);
+                #[cfg(target_arch = "loongarch64")]
+                let code: RetCode = RetCode::from_raw(registers.regs[11]);
                 match code {
                     RetCode::Err(_) => self.syscalls_fail[syscall_number] += 1,
                     _ => self.syscalls_pass[syscall_number] += 1,
@@ -441,6 +443,8 @@ impl<W: Write> Tracer<W> {
         let reg = registers.a7;
         #[cfg(target_arch = "aarch64")]
         let reg = registers.regs[8];
+        #[cfg(target_arch = "loongarch64")]
+        let reg = registers.regs[11];
         (reg as u32)
             .try_into()
             .map_err(|_| anyhow!("Invalid syscall number {}", reg))
@@ -462,6 +466,8 @@ impl<W: Write> Tracer<W> {
             let reg = registers.a7;
             #[cfg(target_arch = "aarch64")]
             let reg = registers.regs[8];
+            #[cfg(target_arch = "loongarch64")]
+            let reg = registers.regs[11];
             reg == Sysno::exit as u64 || reg == Sysno::exit_group as u64
         })
     }

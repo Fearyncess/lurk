@@ -1,11 +1,11 @@
 use crate::arch::SyscallArgType;
 use libc::{c_ulonglong, user_regs_struct};
 use std::ops::Index;
-use syscalls::aarch64::Sysno;
+use syscalls::loongarch64::Sysno;
 use syscalls::SysnoSet;
 
 #[allow(clippy::enum_glob_use)]
-use syscalls::aarch64::Sysno::*;
+use syscalls::loongarch64::Sysno::*;
 
 pub static TRACE_DESC: SysnoSet = SysnoSet::new(&[
     // strace/src/linux/64/syscallent.h
@@ -30,7 +30,6 @@ pub static TRACE_DESC: SysnoSet = SysnoSet::new(&[
     unlinkat,
     symlinkat,
     linkat,
-    renameat,
     fstatfs,
     ftruncate,
     fallocate,
@@ -61,11 +60,11 @@ pub static TRACE_DESC: SysnoSet = SysnoSet::new(&[
     splice,
     tee,
     readlinkat,
-    fstatat,
+    //newfstatat,
     fstat,
     fsync,
     fdatasync,
-    sync_file_range2,
+    sync_file_range,
     timerfd_create,
     timerfd_settime,
     timerfd_gettime,
@@ -118,7 +117,6 @@ pub static TRACE_DESC: SysnoSet = SysnoSet::new(&[
     landlock_create_ruleset,
     landlock_add_rule,
     landlock_restrict_self,
-    memfd_secret,
     process_mrelease,
     cachestat,
     fchmodat2,
@@ -141,12 +139,10 @@ pub static TRACE_FILE: SysnoSet = SysnoSet::new(&[
     unlinkat,
     symlinkat,
     linkat,
-    renameat,
     umount2,
     mount,
     pivot_root,
     statfs,
-    fstatfs,
     truncate,
     faccessat,
     chdir,
@@ -156,7 +152,7 @@ pub static TRACE_FILE: SysnoSet = SysnoSet::new(&[
     openat,
     quotactl,
     readlinkat,
-    fstatat,
+    //newfstatat,
     fstat,
     utimensat,
     acct,
@@ -226,11 +222,6 @@ pub static TRACE_PROCESS: SysnoSet = SysnoSet::new(&[
 
 pub static TRACE_SIGNAL: SysnoSet = SysnoSet::new(&[
     // strace/src/linux/64/syscallent.h
-    statfs,
-    fstatfs,
-    signalfd4,
-    fstatat,
-    fstat,
     kill,
     tkill,
     tgkill,
@@ -242,10 +233,7 @@ pub static TRACE_SIGNAL: SysnoSet = SysnoSet::new(&[
     rt_sigtimedwait,
     rt_sigqueueinfo,
     rt_sigreturn,
-    execve,
     rt_tgsigqueueinfo,
-    execveat,
-    statx,
     // strace/src/linux/generic/syscallent-common.h
     pidfd_send_signal,
     io_uring_enter,
@@ -281,12 +269,13 @@ pub static TRACE_MEMORY: SysnoSet = SysnoSet::new(&[
     io_uring_register,
     set_mempolicy_home_node,
     map_shadow_stack,
+    mseal,
 ]);
 
-pub static TRACE_STAT: SysnoSet = SysnoSet::new(&[fstatat, fstat, statx]);
+pub static TRACE_STAT: SysnoSet = SysnoSet::new(&[fstat, statx]);
 pub static TRACE_LSTAT: SysnoSet = SysnoSet::new(&[]);
-pub static TRACE_FSTAT: SysnoSet = SysnoSet::new(&[fstatat, fstat, statx]);
-pub static TRACE_STAT_LIKE: SysnoSet = SysnoSet::new(&[fstatat, fstat, statx]);
+pub static TRACE_FSTAT: SysnoSet = SysnoSet::new(&[fstat, statx]);
+pub static TRACE_STAT_LIKE: SysnoSet = SysnoSet::new(&[fstat, statx]);
 pub static TRACE_STATFS: SysnoSet = SysnoSet::new(&[statfs, fstatfs]);
 pub static TRACE_FSTATFS: SysnoSet = SysnoSet::new(&[fstatfs]);
 pub static TRACE_STATFS_LIKE: SysnoSet = SysnoSet::new(&[statfs, fstatfs]);
@@ -320,7 +309,6 @@ pub static TRACE_CREDS: SysnoSet = SysnoSet::new(&[
     geteuid,
     getgid,
     getegid,
-    clock_adjtime,
 ]);
 
 pub static TRACE_CLOCK: SysnoSet = SysnoSet::new(&[
@@ -361,25 +349,31 @@ const ADDR: Option<SyscallArgType> = Some(SyscallArgType::Addr);
 const INT: Option<SyscallArgType> = Some(SyscallArgType::Int);
 const STR: Option<SyscallArgType> = Some(SyscallArgType::Str);
 
-pub struct Aarch64Syscalls {
-    _0: [Option<(Sysno, [Option<SyscallArgType>; 6])>; 244],
+pub struct LoongArch64Syscalls {
+    _0: [Option<(Sysno, [Option<SyscallArgType>; 6])>; 38],
+    _39: [Option<(Sysno, [Option<SyscallArgType>; 6])>; 124],
+    _165: [Option<(Sysno, [Option<SyscallArgType>; 6])>; 79],
     _260: [Option<(Sysno, [Option<SyscallArgType>; 6])>; 35],
-    _424: [Option<(Sysno, [Option<SyscallArgType>; 6])>; 29],
+    _424: [Option<(Sysno, [Option<SyscallArgType>; 6])>; 23],
+    _448: [Option<(Sysno, [Option<SyscallArgType>; 6])>; 15],
 }
 
-impl Aarch64Syscalls {
+impl LoongArch64Syscalls {
     pub fn get(&self, index: usize) -> Option<&Option<(Sysno, [Option<SyscallArgType>; 6])>> {
         let result = match index {
-            0..=243 => &self._0[index],
+            0..=37 => &self._0[index],
+            39..=162 => &self._39[index - 39],
+            165..243 => &self._165[index - 165],
             260..=294 => &self._260[index - 260],
-            424..=452 => &self._424[index - 424],
+            424..=446 => &self._424[index - 424],
+            448..=462 => &self._448[index - 448],
             _ => return None,
         };
         Some(result)
     }
 }
 
-impl Index<usize> for Aarch64Syscalls {
+impl Index<usize> for LoongArch64Syscalls {
     type Output = Option<(Sysno, [Option<SyscallArgType>; 6])>;
 
     fn index(&self, index: usize) -> &Self::Output {
@@ -387,13 +381,13 @@ impl Index<usize> for Aarch64Syscalls {
     }
 }
 
-pub static SYSCALLS: Aarch64Syscalls = Aarch64Syscalls {
+pub static SYSCALLS: LoongArch64Syscalls = LoongArch64Syscalls {
     _0: [
         syscall!(io_setup, INT, ADDR),
         syscall!(io_destroy, INT),
         syscall!(io_submit, INT, INT, ADDR),
         syscall!(io_cancel, INT, ADDR, ADDR),
-        syscall!(io_getevents, INT, INT, INT, ADDR, ADDR),
+        syscall!(io_getevents, INT, INT, INT, ADDR, INT),
         syscall!(setxattr, STR, STR, ADDR, INT, INT),
         syscall!(lsetxattr, STR, STR, ADDR, INT, INT),
         syscall!(fsetxattr, INT, STR, ADDR, INT, INT),
@@ -411,15 +405,15 @@ pub static SYSCALLS: Aarch64Syscalls = Aarch64Syscalls {
         syscall!(eventfd2, INT, INT),
         syscall!(epoll_create1, INT),
         syscall!(epoll_ctl, INT, INT, INT, ADDR),
-        syscall!(epoll_pwait, INT, ADDR, INT, INT, ADDR, INT),
+        syscall!(epoll_pwait, INT, ADDR, INT, INT, INT),
         syscall!(dup, INT),
         syscall!(dup3, INT, INT, INT),
-        syscall!(fcntl, INT, INT, INT),
+        syscall!(fcntl, INT, INT),
         syscall!(inotify_init1, INT),
         syscall!(inotify_add_watch, INT, STR, INT),
         syscall!(inotify_rm_watch, INT, INT),
-        syscall!(ioctl, INT, INT, INT),
-        syscall!(ioprio_set, INT, INT, INT),
+        syscall!(ioctl, INT, INT, ADDR),
+        syscall!(ioprio_set, INT, INT),
         syscall!(ioprio_get, INT, INT),
         syscall!(flock, INT, INT),
         syscall!(mknodat, INT, STR, INT, INT),
@@ -427,55 +421,69 @@ pub static SYSCALLS: Aarch64Syscalls = Aarch64Syscalls {
         syscall!(unlinkat, INT, STR, INT),
         syscall!(symlinkat, STR, INT, STR),
         syscall!(linkat, INT, STR, INT, STR, INT),
-        syscall!(renameat, INT, STR, INT, STR),
+    ],
+    _39: [
         syscall!(umount2, STR, INT),
         syscall!(mount, STR, STR, STR, INT, ADDR),
+        syscall!(mount_setattr, INT, STR, INT, ADDR, INT),
         syscall!(pivot_root, STR, STR),
-        syscall!(nfsservctl, INT, ADDR, ADDR),
         syscall!(statfs, STR, ADDR),
         syscall!(fstatfs, INT, ADDR),
         syscall!(truncate, STR, INT),
         syscall!(ftruncate, INT, INT),
         syscall!(fallocate, INT, INT, INT, INT),
-        syscall!(faccessat, INT, STR, INT),
+        syscall!(faccessat, INT, STR, INT, INT),
+        syscall!(faccessat2, INT, STR, INT, INT),
         syscall!(chdir, STR),
         syscall!(fchdir, INT),
         syscall!(chroot, STR),
         syscall!(fchmod, INT, INT),
-        syscall!(fchmodat, INT, STR, INT),
+        syscall!(fchmodat, INT, STR, INT, INT),
+        syscall!(fchmodat, INT, STR, INT, INT),
         syscall!(fchownat, INT, STR, INT, INT, INT),
         syscall!(fchown, INT, INT, INT),
-        syscall!(openat, INT, STR, INT, INT),
+        syscall!(fchownat, INT, STR, INT, INT, INT),
+        syscall!(openat, INT, STR, INT),
+        syscall!(openat2, INT, STR, ADDR, INT),
         syscall!(close, INT),
-        syscall!(vhangup),
-        syscall!(pipe2, ADDR, INT),
+        syscall!(close_range, INT, INT, INT),
+        syscall!(vhangup, ADDR),
+        syscall!(pipe2, INT, INT),
         syscall!(quotactl, INT, STR, INT, ADDR),
+        syscall!(quotactl_fd, INT, INT, INT, ADDR),
         syscall!(getdents64, INT, ADDR, INT),
         syscall!(lseek, INT, INT, INT),
         syscall!(read, INT, STR, INT),
+        syscall!(readv, INT, ADDR, INT),
+        syscall!(readahead, INT, INT, INT),
         syscall!(write, INT, STR, INT),
+        syscall!(writev, INT, ADDR, INT),
         syscall!(readv, INT, ADDR, INT),
         syscall!(writev, INT, ADDR, INT),
         syscall!(pread64, INT, STR, INT, INT),
         syscall!(pwrite64, INT, STR, INT, INT),
-        syscall!(preadv, INT, ADDR, INT, INT, INT),
-        syscall!(pwritev, INT, ADDR, INT, INT, INT),
+        syscall!(preadv, INT, ADDR, INT, INT),
+        syscall!(preadv2, INT, ADDR, INT, INT, INT),
+        syscall!(pwritev, INT, ADDR, INT, INT),
+        syscall!(pwritev2, INT, ADDR, INT, INT, INT),
         syscall!(sendfile, INT, INT, ADDR, INT),
-        syscall!(pselect6, INT, ADDR, ADDR, ADDR, ADDR, ADDR),
-        syscall!(ppoll, ADDR, INT, ADDR, ADDR, INT),
-        syscall!(signalfd4, INT, ADDR, INT, INT),
+        syscall!(pselect6, INT, INT, INT, INT, ADDR, INT),
+        syscall!(ppoll, INT, INT, ADDR, INT),
+        syscall!(signalfd4, INT, INT, INT),
         syscall!(vmsplice, INT, ADDR, INT, INT),
-        syscall!(splice, INT, ADDR, INT, ADDR, INT, INT),
+        syscall!(splice, INT, INT, INT, INT, INT, INT),
         syscall!(tee, INT, INT, INT, INT),
         syscall!(readlinkat, INT, STR, STR, INT),
-        syscall!(fstatat, INT, STR, ADDR, INT),
+//        syscall!(newfstatat, INT, STR, ADDR, INT),
         syscall!(fstat, INT, ADDR),
-        syscall!(sync),
+        syscall!(fstatfs, INT, ADDR),
+        syscall!(sync, INT),
+        syscall!(syncfs, INT),
         syscall!(fsync, INT),
         syscall!(fdatasync, INT),
-        syscall!(sync_file_range2, INT, INT, INT, INT),
+        syscall!(sync_file_range, INT, INT, INT, INT),
         syscall!(timerfd_create, INT, INT),
-        syscall!(timerfd_settime, INT, INT, ADDR, ADDR),
+        syscall!(timerfd_settime, INT, INT, ADDR),
         syscall!(timerfd_gettime, INT, ADDR),
         syscall!(utimensat, INT, STR, ADDR, INT),
         syscall!(acct, STR),
@@ -484,19 +492,21 @@ pub static SYSCALLS: Aarch64Syscalls = Aarch64Syscalls {
         syscall!(personality, INT),
         syscall!(exit, INT),
         syscall!(exit_group, INT),
-        syscall!(waitid, INT, INT, ADDR, INT, ADDR),
+        syscall!(exit_group, INT),
+        syscall!(waitid, INT, INT, INT, INT),
         syscall!(set_tid_address, ADDR),
         syscall!(unshare, INT),
-        syscall!(futex, ADDR, INT, INT, ADDR, ADDR, INT),
+        syscall!(futex, ADDR, INT, INT, ADDR, INT, INT),
+        syscall!(futex_waitv, ADDR, INT, INT, ADDR, INT),
         syscall!(set_robust_list, ADDR, INT),
-        syscall!(get_robust_list, INT, ADDR, ADDR),
+        syscall!(get_robust_list, INT, ADDR, INT),
         syscall!(nanosleep, ADDR, ADDR),
         syscall!(getitimer, INT, ADDR),
-        syscall!(setitimer, INT, ADDR, ADDR),
+        syscall!(setitimer, INT, ADDR),
         syscall!(kexec_load, INT, INT, ADDR, INT),
         syscall!(init_module, ADDR, INT, STR),
         syscall!(delete_module, STR, INT),
-        syscall!(timer_create, INT, ADDR, ADDR),
+        syscall!(timer_create, INT, ADDR, INT),
         syscall!(timer_gettime, INT, ADDR),
         syscall!(timer_getoverrun, INT),
         syscall!(timer_settime, INT, INT, ADDR, ADDR),
@@ -506,27 +516,27 @@ pub static SYSCALLS: Aarch64Syscalls = Aarch64Syscalls {
         syscall!(clock_getres, INT, ADDR),
         syscall!(clock_nanosleep, INT, INT, ADDR, ADDR),
         syscall!(syslog, INT, STR, INT),
-        syscall!(ptrace, INT, INT, INT, INT),
+        syscall!(ptrace, ADDR, INT, ADDR, ADDR),
         syscall!(sched_setparam, INT, ADDR),
         syscall!(sched_setscheduler, INT, INT, ADDR),
         syscall!(sched_getscheduler, INT),
         syscall!(sched_getparam, INT, ADDR),
-        syscall!(sched_setaffinity, INT, INT, ADDR),
-        syscall!(sched_getaffinity, INT, INT, ADDR),
-        syscall!(sched_yield),
+        syscall!(sched_setaffinity, INT, INT, INT),
+        syscall!(sched_getaffinity, INT, INT, INT),
+        syscall!(sched_yield, ADDR),
         syscall!(sched_get_priority_max, INT),
         syscall!(sched_get_priority_min, INT),
         syscall!(sched_rr_get_interval, INT, ADDR),
-        syscall!(restart_syscall),
+        syscall!(restart_syscall, ADDR),
         syscall!(kill, INT, INT),
         syscall!(tkill, INT, INT),
         syscall!(tgkill, INT, INT, INT),
         syscall!(sigaltstack, ADDR, ADDR),
-        syscall!(rt_sigsuspend, ADDR, INT),
-        syscall!(rt_sigaction, INT, ADDR, ADDR, INT),
+        syscall!(rt_sigsuspend, INT),
+        syscall!(rt_sigaction, INT, ADDR, ADDR),
         syscall!(rt_sigprocmask, INT, ADDR, ADDR, INT),
-        syscall!(rt_sigpending, ADDR, INT),
-        syscall!(rt_sigtimedwait, ADDR, ADDR, ADDR, INT),
+        syscall!(rt_sigpending, ADDR),
+        syscall!(rt_sigtimedwait, ADDR, ADDR, ADDR),
         syscall!(rt_sigqueueinfo, INT, INT, ADDR),
         syscall!(rt_sigreturn),
         syscall!(setpriority, INT, INT, INT),
@@ -537,42 +547,42 @@ pub static SYSCALLS: Aarch64Syscalls = Aarch64Syscalls {
         syscall!(setreuid, INT, INT),
         syscall!(setuid, INT),
         syscall!(setresuid, INT, INT, INT),
-        syscall!(getresuid, ADDR, ADDR, ADDR),
+        syscall!(getresuid, INT, INT, INT),
         syscall!(setresgid, INT, INT, INT),
-        syscall!(getresgid, ADDR, ADDR, ADDR),
+        syscall!(getresgid, INT, INT, INT),
         syscall!(setfsuid, INT),
         syscall!(setfsgid, INT),
         syscall!(times, ADDR),
-        syscall!(setpgid, INT, INT),
+        syscall!(setpgid, INT, INT, INT),
         syscall!(getpgid, INT),
         syscall!(getsid, INT),
-        syscall!(setsid),
-        syscall!(getgroups, INT, ADDR),
-        syscall!(setgroups, INT, ADDR),
+        syscall!(setsid, ADDR),
+        syscall!(getgroups, INT, INT),
+        syscall!(setgroups, INT, INT),
         syscall!(uname, ADDR),
         syscall!(sethostname, STR, INT),
         syscall!(setdomainname, STR, INT),
-        syscall!(getrlimit, INT, ADDR),
-        syscall!(setrlimit, INT, ADDR),
+    ],
+    _165: [
         syscall!(getrusage, INT, ADDR),
         syscall!(umask, INT),
         syscall!(prctl, INT, INT, INT, INT, INT),
-        syscall!(getcpu, ADDR, ADDR, ADDR),
+        syscall!(getcpu, INT, INT, ADDR),
         syscall!(gettimeofday, ADDR, ADDR),
         syscall!(settimeofday, ADDR, ADDR),
-        syscall!(adjtimex, ADDR),
-        syscall!(getpid),
-        syscall!(getppid),
-        syscall!(getuid),
-        syscall!(geteuid),
-        syscall!(getgid),
-        syscall!(getegid),
-        syscall!(gettid),
+        syscall!(adjtimex, STR),
+        syscall!(getpid, ADDR),
+        syscall!(getppid, ADDR),
+        syscall!(getuid, ADDR),
+        syscall!(geteuid, ADDR),
+        syscall!(getgid, ADDR),
+        syscall!(getegid, ADDR),
+        syscall!(gettid, ADDR),
         syscall!(sysinfo, ADDR),
-        syscall!(mq_open, STR, INT, INT, ADDR),
+        syscall!(mq_open, STR, INT),
         syscall!(mq_unlink, STR),
-        syscall!(mq_timedsend, INT, STR, INT, INT, ADDR),
-        syscall!(mq_timedreceive, INT, STR, INT, ADDR, ADDR),
+        syscall!(mq_timedsend, INT, STR, INT, INT),
+        syscall!(mq_timedreceive, INT, ADDR, INT, INT, ADDR),
         syscall!(mq_notify, INT, ADDR),
         syscall!(mq_getsetattr, INT, ADDR, ADDR),
         syscall!(msgget, INT, INT),
@@ -580,68 +590,76 @@ pub static SYSCALLS: Aarch64Syscalls = Aarch64Syscalls {
         syscall!(msgrcv, INT, ADDR, INT, INT, INT),
         syscall!(msgsnd, INT, ADDR, INT, INT),
         syscall!(semget, INT, INT, INT),
-        syscall!(semctl, INT, INT, INT, INT),
-        syscall!(semtimedop, INT, ADDR, INT, ADDR),
+        syscall!(semctl, INT, INT, INT),
+        syscall!(semtimedop, INT, ADDR, INT),
         syscall!(semop, INT, ADDR, INT),
         syscall!(shmget, INT, INT, INT),
-        syscall!(shmctl, INT, INT, ADDR),
-        syscall!(shmat, INT, STR, INT),
-        syscall!(shmdt, STR),
+        syscall!(shmctl, INT, INT, STR),
+        syscall!(shmat, INT, ADDR, INT),
+        syscall!(shmdt, INT, ADDR, INT),
         syscall!(socket, INT, INT, INT),
-        syscall!(socketpair, INT, INT, INT, ADDR),
+        syscall!(socketpair, INT, INT, INT, INT),
+        syscall!(socketpair, INT, INT, INT, INT),
         syscall!(bind, INT, ADDR, INT),
         syscall!(listen, INT, INT),
         syscall!(accept, INT, ADDR, ADDR),
+        syscall!(accept4, INT, ADDR, INT),
         syscall!(connect, INT, ADDR, INT),
         syscall!(getsockname, INT, ADDR, ADDR),
         syscall!(getpeername, INT, ADDR, ADDR),
-        syscall!(sendto, INT, ADDR, INT, INT, ADDR, INT),
-        syscall!(recvfrom, INT, ADDR, INT, INT, ADDR, ADDR),
-        syscall!(setsockopt, INT, INT, INT, STR, INT),
-        syscall!(getsockopt, INT, INT, INT, STR, ADDR),
+        syscall!(sendto, INT, STR, INT, INT),
+        syscall!(recvfrom, INT, STR, INT, INT, ADDR, ADDR),
+        syscall!(setsockopt, INT, INT, INT, ADDR, INT),
+        syscall!(getsockopt, INT, INT, INT, ADDR, ADDR),
         syscall!(shutdown, INT, INT),
         syscall!(sendmsg, INT, ADDR, INT),
         syscall!(recvmsg, INT, ADDR, INT),
         syscall!(readahead, INT, INT, INT),
-        syscall!(brk, INT),
-        syscall!(munmap, INT, INT),
-        syscall!(mremap, INT, INT, INT, INT, INT),
+        syscall!(brk, ADDR),
+        syscall!(munmap, ADDR, INT),
+        syscall!(mremap, ADDR, INT, INT, INT, ADDR),
         syscall!(add_key, STR, STR, ADDR, INT, INT),
         syscall!(request_key, STR, STR, STR, INT),
-        syscall!(keyctl, INT, INT, INT, INT, INT),
-        syscall!(clone, INT, INT, ADDR, INT, ADDR),
+        syscall!(keyctl, INT),
+        syscall!(clone, ADDR, INT),
+        syscall!(clone3, ADDR, INT),
         syscall!(execve, STR, STR, STR),
+        syscall!(execveat, INT, STR, STR, STR, INT),
         syscall!(mmap, ADDR, INT, INT, INT, INT, INT),
         syscall!(fadvise64, INT, INT, INT, INT),
         syscall!(swapon, STR, INT),
         syscall!(swapoff, STR),
-        syscall!(mprotect, INT, INT, INT),
-        syscall!(msync, INT, INT, INT),
-        syscall!(mlock, INT, INT),
-        syscall!(munlock, INT, INT),
+        syscall!(mprotect, ADDR, INT, INT),
+        syscall!(msync, ADDR, INT, INT),
+        syscall!(mlock, ADDR, INT),
         syscall!(mlockall, INT),
-        syscall!(munlockall),
-        syscall!(mincore, INT, INT, ADDR),
-        syscall!(madvise, INT, INT, INT),
-        syscall!(remap_file_pages, INT, INT, INT, INT, INT),
-        syscall!(mbind, INT, INT, INT, ADDR, INT, INT),
-        syscall!(get_mempolicy, ADDR, ADDR, INT, INT, INT),
-        syscall!(set_mempolicy, INT, ADDR, INT),
-        syscall!(migrate_pages, INT, INT, ADDR, ADDR),
-        syscall!(move_pages, INT, INT, ADDR, ADDR, ADDR, INT),
-        syscall!(rt_tgsigqueueinfo, INT, INT, INT, ADDR),
+        syscall!(mlock2, ADDR, INT, INT),
+        syscall!(munlock, ADDR, INT),
+        syscall!(munlockall, ADDR),
+        syscall!(mlockall, INT),
+        syscall!(munlockall, ADDR),
+        syscall!(mincore, ADDR, INT, ADDR),
+        syscall!(madvise, ADDR, INT, INT),
+        syscall!(remap_file_pages, ADDR, INT, INT, INT, INT),
+        syscall!(mbind, ADDR, INT, INT, INT, INT, INT),
+        syscall!(get_mempolicy, INT, INT, INT, ADDR, INT),
+        syscall!(set_mempolicy, INT, INT, INT),
+        syscall!(set_mempolicy_home_node, INT, INT, INT, INT),
+        syscall!(migrate_pages, INT, INT, INT, INT),
+        syscall!(move_pages, INT, INT, ADDR, INT, INT, INT),
+        syscall!(rt_tgsigqueueinfo, INT, INT, INT),
         syscall!(perf_event_open, ADDR, INT, INT, INT, INT),
-        syscall!(accept4, INT, ADDR, ADDR, INT),
+        syscall!(accept4, INT, ADDR, INT),
         syscall!(recvmmsg, INT, ADDR, INT, INT, ADDR),
     ],
     _260: [
-        syscall!(wait4, INT, ADDR, INT, ADDR),
+        syscall!(wait4, INT, INT, INT, ADDR),
         syscall!(prlimit64, INT, INT, ADDR, ADDR),
         syscall!(fanotify_init, INT, INT),
         syscall!(fanotify_mark, INT, INT, INT, INT, STR),
         syscall!(name_to_handle_at, INT, STR, ADDR, INT, INT),
         syscall!(open_by_handle_at, INT, ADDR, INT),
-        syscall!(clock_adjtime, INT, ADDR),
+        syscall!(clock_adjtime, ADDR),
         syscall!(syncfs, INT),
         syscall!(setns, INT, INT),
         syscall!(sendmmsg, INT, ADDR, INT, INT),
@@ -651,7 +669,7 @@ pub static SYSCALLS: Aarch64Syscalls = Aarch64Syscalls {
         syscall!(finit_module, INT, STR, INT),
         syscall!(sched_setattr, INT, ADDR, INT),
         syscall!(sched_getattr, INT, ADDR, INT, INT),
-        syscall!(renameat2, INT, STR, INT, STR, INT),
+        syscall!(renameat2, INT, STR, INT, STR),
         syscall!(seccomp, INT, INT, ADDR),
         syscall!(getrandom, STR, INT, INT),
         syscall!(memfd_create, STR, INT),
@@ -659,17 +677,17 @@ pub static SYSCALLS: Aarch64Syscalls = Aarch64Syscalls {
         syscall!(execveat, INT, STR, STR, STR, INT),
         syscall!(userfaultfd, INT),
         syscall!(membarrier, INT, INT, INT),
-        syscall!(mlock2, INT, INT, INT),
-        syscall!(copy_file_range, INT, ADDR, INT, ADDR, INT, INT),
-        syscall!(preadv2, INT, ADDR, INT, INT, INT, INT),
-        syscall!(pwritev2, INT, ADDR, INT, INT, INT, INT),
-        syscall!(pkey_mprotect, INT, INT, INT, INT),
+        syscall!(mlock2, ADDR, INT, INT),
+        syscall!(copy_file_range, INT, INT, INT, INT, INT, INT),
+        syscall!(preadv2, INT, ADDR, INT, INT, INT),
+        syscall!(pwritev2, INT, ADDR, INT, INT, INT),
+        syscall!(pkey_mprotect, ADDR, INT, INT, INT),
         syscall!(pkey_alloc, INT, INT),
         syscall!(pkey_free, INT),
-        syscall!(statx, INT, STR, INT, INT, ADDR),
-        syscall!(io_pgetevents, INT, INT, INT, ADDR, ADDR, ADDR),
-        syscall!(rseq, ADDR, INT, INT, INT),
-        syscall!(kexec_file_load, INT, INT, INT, STR, INT),
+        syscall!(statx, INT, STR, INT, INT, STR),
+        syscall!(io_pgetevents),
+        syscall!(rseq),
+        syscall!(kexec_file_load, INT, INT, ADDR, INT),
     ],
     _424: [
         syscall!(pidfd_send_signal, INT, INT, ADDR, INT),
@@ -693,25 +711,36 @@ pub static SYSCALLS: Aarch64Syscalls = Aarch64Syscalls {
         syscall!(mount_setattr, INT, STR, INT, ADDR, INT),
         syscall!(quotactl_fd, INT, INT, INT, ADDR),
         syscall!(landlock_create_ruleset, ADDR, INT, INT),
-        syscall!(landlock_add_rule, INT, ADDR, ADDR, INT),
+        syscall!(landlock_add_rule, INT, INT, ADDR, INT),
         syscall!(landlock_restrict_self, INT, INT),
-        syscall!(memfd_secret, INT),
+    ],
+    _448: [
         syscall!(process_mrelease, INT, INT),
         syscall!(futex_waitv, ADDR, INT, INT, ADDR, INT),
         syscall!(set_mempolicy_home_node, INT, INT, INT, INT),
         syscall!(cachestat, INT, INT, INT, INT),
         syscall!(fchmodat2, INT, STR, INT, INT),
+        syscall!(map_shadow_stack, INT, INT, INT),
+        syscall!(futex, wake, ADDR, INT, INT, INT),
+        syscall!(futex_wait, ADDR, INT, INT, ADDR, INT),
+        syscall!(futex_requeue, ADDR, INT, INT, INT),
+        syscall!(statmount, ADDR, ADDR, INT, INT),
+        syscall!(listmount, ADDR, ADDR, INT, INT),
+        syscall!(lsm_get_self_attr, ADDR, ADDR, INT),
+        syscall!(lsm_set_self_attr, ADDR, INT, INT),
+        syscall!(lsm_list_modules, ADDR, ADDR, INT),
+        syscall!(mseal, INT, INT, INT),
     ],
 };
 
 pub fn get_arg_value(registers: user_regs_struct, i: usize) -> c_ulonglong {
     match i {
-        0 => registers.regs[0],
-        1 => registers.regs[1],
-        2 => registers.regs[2],
-        3 => registers.regs[3],
-        4 => registers.regs[4],
-        5 => registers.regs[5],
+        0 => registers.regs[4], // $a0
+        1 => registers.regs[5], // $a1
+        2 => registers.regs[6], // $a2
+        3 => registers.regs[7], // $a3
+        4 => registers.regs[8], // $a4
+        5 => registers.regs[9], // $a5
         v => panic!("Invalid system call index {v}!"),
     }
 }
@@ -728,6 +757,16 @@ mod tests {
                 assert_eq!(i, sysno.id() as usize);
             }
         }
+        for (i, sysno, ..) in SYSCALLS._39.iter().enumerate() {
+            if let Some((sysno, _)) = sysno {
+                assert_eq!(i + 39, sysno.id() as usize);
+            }
+        }
+        for (i, sysno, ..) in SYSCALLS._165.iter().enumerate() {
+            if let Some((sysno, _)) = sysno {
+                assert_eq!(i + 165, sysno.id() as usize);
+            }
+        }
         for (i, sysno, ..) in SYSCALLS._260.iter().enumerate() {
             if let Some((sysno, _)) = sysno {
                 assert_eq!(i + 260, sysno.id() as usize);
@@ -736,6 +775,11 @@ mod tests {
         for (i, sysno, ..) in SYSCALLS._424.iter().enumerate() {
             if let Some((sysno, _)) = sysno {
                 assert_eq!(i + 424, sysno.id() as usize);
+            }
+        }
+        for (i, sysno, ..) in SYSCALLS._448.iter().enumerate() {
+            if let Some((sysno, _)) = sysno {
+                assert_eq!(i + 448, sysno.id() as usize);
             }
         }
     }
