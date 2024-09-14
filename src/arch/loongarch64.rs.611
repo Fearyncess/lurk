@@ -60,7 +60,7 @@ pub static TRACE_DESC: SysnoSet = SysnoSet::new(&[
     splice,
     tee,
     readlinkat,
-    //newfstatat,
+    newfstatat,
     fstat,
     fsync,
     fdatasync,
@@ -152,7 +152,7 @@ pub static TRACE_FILE: SysnoSet = SysnoSet::new(&[
     openat,
     quotactl,
     readlinkat,
-    //newfstatat,
+    newfstatat,
     fstat,
     utimensat,
     acct,
@@ -272,10 +272,10 @@ pub static TRACE_MEMORY: SysnoSet = SysnoSet::new(&[
     mseal,
 ]);
 
-pub static TRACE_STAT: SysnoSet = SysnoSet::new(&[fstat, statx]);
+pub static TRACE_STAT: SysnoSet = SysnoSet::new(&[newfstatat, fstat, statx]);
 pub static TRACE_LSTAT: SysnoSet = SysnoSet::new(&[]);
-pub static TRACE_FSTAT: SysnoSet = SysnoSet::new(&[fstat, statx]);
-pub static TRACE_STAT_LIKE: SysnoSet = SysnoSet::new(&[fstat, statx]);
+pub static TRACE_FSTAT: SysnoSet = SysnoSet::new(&[newfstatat, fstat, statx]);
+pub static TRACE_STAT_LIKE: SysnoSet = SysnoSet::new(&[newfstatat, fstat, statx]);
 pub static TRACE_STATFS: SysnoSet = SysnoSet::new(&[statfs, fstatfs]);
 pub static TRACE_FSTATFS: SysnoSet = SysnoSet::new(&[fstatfs]);
 pub static TRACE_STATFS_LIKE: SysnoSet = SysnoSet::new(&[statfs, fstatfs]);
@@ -351,9 +351,7 @@ const STR: Option<SyscallArgType> = Some(SyscallArgType::Str);
 
 pub struct LoongArch64Syscalls {
     _0: [Option<(Sysno, [Option<SyscallArgType>; 6])>; 38],
-    _39: [Option<(Sysno, [Option<SyscallArgType>; 6])>; 3],
-    _43: [Option<(Sysno, [Option<SyscallArgType>; 6])>; 36],
-    _80: [Option<(Sysno, [Option<SyscallArgType>; 6])>; 83],
+    _39: [Option<(Sysno, [Option<SyscallArgType>; 6])>; 124],
     _165: [Option<(Sysno, [Option<SyscallArgType>; 6])>; 79],
     _260: [Option<(Sysno, [Option<SyscallArgType>; 6])>; 35],
     _424: [Option<(Sysno, [Option<SyscallArgType>; 6])>; 23],
@@ -364,9 +362,7 @@ impl LoongArch64Syscalls {
     pub fn get(&self, index: usize) -> Option<&Option<(Sysno, [Option<SyscallArgType>; 6])>> {
         let result = match index {
             0..=37 => &self._0[index],
-            39..=41 => &self._39[index - 39],
-            43..=78 => &self._43[index - 43],
-            80..=162 => &self._80[index - 80],
+            39..=162 => &self._39[index - 39],
             165..243 => &self._165[index - 165],
             260..=294 => &self._260[index - 260],
             424..=446 => &self._424[index - 424],
@@ -408,9 +404,13 @@ pub static SYSCALLS: LoongArch64Syscalls = LoongArch64Syscalls {
         syscall!(lookup_dcookie, INT, STR, INT),
         syscall!(eventfd2, INT, INT),
         syscall!(epoll_create1, INT),
+        syscall!(epoll_ctl_old, INT, INT, INT, ADDR),
         syscall!(epoll_ctl, INT, INT, INT, ADDR),
         syscall!(epoll_pwait, INT, ADDR, INT, INT, INT),
+        syscall!(epoll_pwait2, INT, ADDR, INT, ADDR, ADDR, INT),
         syscall!(dup, INT),
+        syscall!(dup2, INT, INT),
+        syscall!(dup3, INT, INT, INT),
         syscall!(dup3, INT, INT, INT),
         syscall!(fcntl, INT, INT),
         syscall!(inotify_init1, INT),
@@ -429,37 +429,49 @@ pub static SYSCALLS: LoongArch64Syscalls = LoongArch64Syscalls {
     _39: [
         syscall!(umount2, STR, INT),
         syscall!(mount, STR, STR, STR, INT, ADDR),
+        syscall!(mount_setattr, INT, STR, INT, ADDR, INT),
         syscall!(pivot_root, STR, STR),
-    ],
-    _43: [
         syscall!(statfs, STR, ADDR),
         syscall!(fstatfs, INT, ADDR),
         syscall!(truncate, STR, INT),
         syscall!(ftruncate, INT, INT),
         syscall!(fallocate, INT, INT, INT, INT),
         syscall!(faccessat, INT, STR, INT, INT),
+        syscall!(faccessat2, INT, STR, INT, INT),
         syscall!(chdir, STR),
         syscall!(fchdir, INT),
         syscall!(chroot, STR),
         syscall!(fchmod, INT, INT),
         syscall!(fchmodat, INT, STR, INT, INT),
+        syscall!(fchmodat, INT, STR, INT, INT),
         syscall!(fchownat, INT, STR, INT, INT, INT),
         syscall!(fchown, INT, INT, INT),
+        syscall!(fchownat, INT, STR, INT, INT, INT),
         syscall!(openat, INT, STR, INT),
+        syscall!(openat2, INT, STR, ADDR, INT),
         syscall!(close, INT),
+        syscall!(close_range, INT, INT, INT),
         syscall!(vhangup, ADDR),
         syscall!(pipe2, INT, INT),
         syscall!(quotactl, INT, STR, INT, ADDR),
+        syscall!(quotactl_fd, INT, INT, INT, ADDR),
         syscall!(getdents64, INT, ADDR, INT),
         syscall!(lseek, INT, INT, INT),
         syscall!(read, INT, STR, INT),
+        syscall!(readv, INT, ADDR, INT),
+        syscall!(readlink, STR, STR, INT),
+        syscall!(readahead, INT, INT, INT),
+        syscall!(readlinkat, INT, STR, STR, INT),
         syscall!(write, INT, STR, INT),
+        syscall!(writev, INT, ADDR, INT),
         syscall!(readv, INT, ADDR, INT),
         syscall!(writev, INT, ADDR, INT),
         syscall!(pread64, INT, STR, INT, INT),
         syscall!(pwrite64, INT, STR, INT, INT),
         syscall!(preadv, INT, ADDR, INT, INT),
+        syscall!(preadv2, INT, ADDR, INT, INT, INT),
         syscall!(pwritev, INT, ADDR, INT, INT),
+        syscall!(pwritev2, INT, ADDR, INT, INT, INT),
         syscall!(sendfile, INT, INT, ADDR, INT),
         syscall!(pselect6, INT, INT, INT, INT, ADDR, INT),
         syscall!(ppoll, INT, INT, ADDR, INT),
@@ -468,11 +480,12 @@ pub static SYSCALLS: LoongArch64Syscalls = LoongArch64Syscalls {
         syscall!(splice, INT, INT, INT, INT, INT, INT),
         syscall!(tee, INT, INT, INT, INT),
         syscall!(readlinkat, INT, STR, STR, INT),
-    ],
-//        syscall!(newfstatat, INT, STR, ADDR, INT),
-    _80: [
+        syscall!(newfstatat, INT, STR, ADDR, INT),
         syscall!(fstat, INT, ADDR),
+        syscall!(fstatfs, INT, ADDR),
         syscall!(sync, INT),
+        syscall!(sync_file_range, INT, INT, INT, INT),
+        syscall!(syncfs, INT),
         syscall!(fsync, INT),
         syscall!(fdatasync, INT),
         syscall!(sync_file_range, INT, INT, INT, INT),
@@ -486,10 +499,12 @@ pub static SYSCALLS: LoongArch64Syscalls = LoongArch64Syscalls {
         syscall!(personality, INT),
         syscall!(exit, INT),
         syscall!(exit_group, INT),
+        syscall!(exit_group, INT),
         syscall!(waitid, INT, INT, INT, INT),
         syscall!(set_tid_address, ADDR),
         syscall!(unshare, INT),
         syscall!(futex, ADDR, INT, INT, ADDR, INT, INT),
+        syscall!(futex_waitv, ADDR, INT, INT, ADDR, INT),
         syscall!(set_robust_list, ADDR, INT),
         syscall!(get_robust_list, INT, ADDR, INT),
         syscall!(nanosleep, ADDR, ADDR),
@@ -591,9 +606,11 @@ pub static SYSCALLS: LoongArch64Syscalls = LoongArch64Syscalls {
         syscall!(shmdt, INT, ADDR, INT),
         syscall!(socket, INT, INT, INT),
         syscall!(socketpair, INT, INT, INT, INT),
+        syscall!(socketpair, INT, INT, INT, INT),
         syscall!(bind, INT, ADDR, INT),
         syscall!(listen, INT, INT),
         syscall!(accept, INT, ADDR, ADDR),
+        syscall!(accept4, INT, ADDR, INT),
         syscall!(connect, INT, ADDR, INT),
         syscall!(getsockname, INT, ADDR, ADDR),
         syscall!(getpeername, INT, ADDR, ADDR),
@@ -612,7 +629,9 @@ pub static SYSCALLS: LoongArch64Syscalls = LoongArch64Syscalls {
         syscall!(request_key, STR, STR, STR, INT),
         syscall!(keyctl, INT),
         syscall!(clone, ADDR, INT),
+        syscall!(clone3, ADDR, INT),
         syscall!(execve, STR, STR, STR),
+        syscall!(execveat, INT, STR, STR, STR, INT),
         syscall!(mmap, ADDR, INT, INT, INT, INT, INT),
         syscall!(fadvise64, INT, INT, INT, INT),
         syscall!(swapon, STR, INT),
@@ -620,7 +639,10 @@ pub static SYSCALLS: LoongArch64Syscalls = LoongArch64Syscalls {
         syscall!(mprotect, ADDR, INT, INT),
         syscall!(msync, ADDR, INT, INT),
         syscall!(mlock, ADDR, INT),
+        syscall!(mlockall, INT),
+        syscall!(mlock2, ADDR, INT, INT),
         syscall!(munlock, ADDR, INT),
+        syscall!(munlockall, ADDR),
         syscall!(mlockall, INT),
         syscall!(munlockall, ADDR),
         syscall!(mincore, ADDR, INT, ADDR),
@@ -629,6 +651,7 @@ pub static SYSCALLS: LoongArch64Syscalls = LoongArch64Syscalls {
         syscall!(mbind, ADDR, INT, INT, INT, INT, INT),
         syscall!(get_mempolicy, INT, INT, INT, ADDR, INT),
         syscall!(set_mempolicy, INT, INT, INT),
+        syscall!(set_mempolicy_home_node, INT, INT, INT, INT),
         syscall!(migrate_pages, INT, INT, INT, INT),
         syscall!(move_pages, INT, INT, ADDR, INT, INT, INT),
         syscall!(rt_tgsigqueueinfo, INT, INT, INT),
@@ -705,7 +728,7 @@ pub static SYSCALLS: LoongArch64Syscalls = LoongArch64Syscalls {
         syscall!(cachestat, INT, INT, INT, INT),
         syscall!(fchmodat2, INT, STR, INT, INT),
         syscall!(map_shadow_stack, INT, INT, INT),
-        syscall!(futex_wake, ADDR, INT, INT, INT),
+        syscall!(futex, wake, ADDR, INT, INT, INT),
         syscall!(futex_wait, ADDR, INT, INT, ADDR, INT),
         syscall!(futex_requeue, ADDR, INT, INT, INT),
         syscall!(statmount, ADDR, ADDR, INT, INT),
@@ -744,16 +767,6 @@ mod tests {
         for (i, sysno, ..) in SYSCALLS._39.iter().enumerate() {
             if let Some((sysno, _)) = sysno {
                 assert_eq!(i + 39, sysno.id() as usize);
-            }
-        }
-        for (i, sysno, ..) in SYSCALLS._43.iter().enumerate() {
-            if let Some((sysno, _)) = sysno {
-                assert_eq!(i + 43, sysno.id() as usize);
-            }
-        }
-        for (i, sysno, ..) in SYSCALLS._80.iter().enumerate() {
-            if let Some((sysno, _)) = sysno {
-                assert_eq!(i + 80, sysno.id() as usize);
             }
         }
         for (i, sysno, ..) in SYSCALLS._165.iter().enumerate() {

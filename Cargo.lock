@@ -62,9 +62,9 @@ dependencies = [
 
 [[package]]
 name = "anyhow"
-version = "1.0.88"
+version = "1.0.89"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4e1496f8fb1fbf272686b8d37f523dab3e4a7443300055e74cdaa449f3114356"
+checksum = "86fdf8605db99b54d3cd748a44c6d04df638eb5dafb219b135d0149bd0db01f6"
 
 [[package]]
 name = "atty"
@@ -306,8 +306,7 @@ checksum = "78ca9ab1a0babb1e7d5695e3530886289c18cf2f87ec19a575a0abdce112e3a3"
 [[package]]
 name = "nix"
 version = "0.29.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "71e2746dc3a24dd78b3cfcb7be93368c6de9963d30f43a6a73998a9cf4b17b46"
+source = "git+https://github.com/fearyncess/nix?branch=loongarch64-ptrace-regs#4577e12994adbed7ff505cbb6cc149569de8f32e"
 dependencies = [
  "bitflags 2.6.0",
  "cfg-if",
@@ -500,7 +499,7 @@ dependencies = [
 [[package]]
 name = "syscalls"
 version = "0.6.18"
-source = "git+https://github.com/jasonwhite/syscalls?rev=refs/pull/54/head#eed6c11edf7b656e06368febbb417d21e37ad2af"
+source = "git+https://github.com/fearyncess/syscalls?rev=38c69f190fdb75c8107c70bf5e349c4f52a464c5#38c69f190fdb75c8107c70bf5e349c4f52a464c5"
 dependencies = [
  "serde",
  "serde_repr",
